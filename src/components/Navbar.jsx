@@ -1,0 +1,148 @@
+import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
+import { useTheme } from '../context/ThemeContext'
+
+function Navbar() {
+  const [user, setUser] = useState(null)
+  const navigate = useNavigate()
+  const { dark, toggle } = useTheme()
+
+  const t = dark ? themes.dark : themes.light
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    navigate('/')
+  }
+
+  return (
+    <nav style={{ ...styles.nav, background: t.navBg, borderBottom: `0.5px solid ${t.border}` }}>
+      <Link to="/" style={styles.logo}>
+        <div style={{ ...styles.logoIcon, background: dark ? '#2A2547' : '#EEEDFE' }}>
+          <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+            <path d="M19 7L10 17H16L13 25L22 15H16L19 7Z" fill={dark ? '#A89CF7' : '#7F77DD'} stroke={dark ? '#A89CF7' : '#7F77DD'} strokeWidth="0.5" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <span style={{ ...styles.logoText, color: dark ? '#C4BFFF' : '#3C3489' }}>DisWall</span>
+      </Link>
+
+      <div style={styles.right}>
+        <button
+          onClick={toggle}
+          style={{ ...styles.iconBtn, color: t.muted, border: `0.5px solid ${t.border}` }}
+          aria-label="Toggle dark mode"
+        >
+          {dark ? '☀️' : '🌙'}
+        </button>
+
+        {user ? (
+          <>
+            <Link to="/create" style={{ ...styles.btnFill }}>Post a profile</Link>
+            <Link to="/settings" style={{ ...styles.btnOutline, color: t.text, border: `0.5px solid ${t.border}` }}>Settings</Link>
+            <button onClick={handleLogout} style={{ ...styles.btnOutline, color: t.text, border: `0.5px solid ${t.border}` }}>Log out</button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" style={{ ...styles.btnOutline, color: t.text, border: `0.5px solid ${t.border}` }}>Log in</Link>
+            <Link to="/signup" style={{ ...styles.btnFill }}>Sign up</Link>
+          </>
+        )}
+      </div>
+    </nav>
+  )
+}
+
+const themes = {
+  light: {
+    navBg: '#ffffff',
+    border: '#E4E2F4',
+    text: '#3f3f46',
+    muted: '#71717a',
+  },
+  dark: {
+    navBg: '#2B2D31',
+    border: '#1E1F22',
+    text: '#B5BAC1',
+    muted: '#6D6F78',
+  },
+}
+
+const styles = {
+  nav: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0.875rem 2rem',
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
+  },
+  logo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    textDecoration: 'none',
+  },
+  logoIcon: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoText: {
+    fontSize: '17px',
+    fontWeight: '500',
+    letterSpacing: '-0.01em',
+  },
+  right: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  iconBtn: {
+    width: '34px',
+    height: '34px',
+    borderRadius: '8px',
+    background: 'transparent',
+    cursor: 'pointer',
+    fontSize: '15px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnOutline: {
+    fontSize: '13px',
+    padding: '7px 16px',
+    borderRadius: '8px',
+    background: 'transparent',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    fontFamily: 'inherit',
+  },
+  btnFill: {
+    fontSize: '13px',
+    padding: '7px 16px',
+    borderRadius: '8px',
+    background: '#7F77DD',
+    border: 'none',
+    color: '#fff',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    fontWeight: '500',
+    fontFamily: 'inherit',
+  },
+}
+
+export default Navbar
