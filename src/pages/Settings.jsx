@@ -32,6 +32,8 @@ function Settings() {
   const [totalClicks, setTotalClicks] = useState(0)
   const [publishCount, setPublishCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [discordId, setDiscordId] = useState('')
+  const [discordLinkLoading, setDiscordLinkLoading] = useState(false)
 
   useEffect(() => { checkUser() }, [])
 
@@ -103,6 +105,19 @@ function Settings() {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
   }
 
+  const handleLinkDiscord = async () => {
+    if (!discordId.trim()) return
+      setDiscordLinkLoading(true)
+      const { error } = await supabase
+        .from('profiles')
+        .update({ discord_id: discordId.trim() })
+        .eq('id', user.id)
+      if (!error) {
+        setProfile(prev => ({ ...prev, discord_id: discordId.trim() }))
+      }
+      setDiscordLinkLoading(false)
+    }
+
   return (
     <div style={{ background: t.pageBg, minHeight: '100vh', padding: '1.5rem', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ maxWidth: '560px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -112,18 +127,39 @@ function Settings() {
         <div style={card}>
           <p style={label}>Account</p>
           <div style={row}>
-            <span style={{ fontSize: '13px', color: t.textSecondary }}>Username</span>
+           <span style={{ fontSize: '13px', color: t.textSecondary }}>Username</span>
             <span style={{ fontSize: '13px', fontWeight: '500', color: t.textPrimary }}>{profile?.username || '—'}</span>
-          </div>
-          <div style={{ borderTop: `0.5px solid ${t.border}` }} />
-          <div style={row}>
-            <span style={{ fontSize: '13px', color: t.textSecondary }}>Discord</span>
-            <span style={{ fontSize: '13px', fontWeight: '500', color: t.textPrimary }}>{profile?.discord_handle || '—'}</span>
           </div>
           <div style={{ borderTop: `0.5px solid ${t.border}` }} />
           <div style={row}>
             <span style={{ fontSize: '13px', color: t.textSecondary }}>Email</span>
             <span style={{ fontSize: '13px', fontWeight: '500', color: t.textPrimary }}>{user?.email}</span>
+          </div>
+          <div style={{ borderTop: `0.5px solid ${t.border}` }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={row}>
+              <span style={{ fontSize: '13px', color: t.textSecondary }}>Discord ID</span>
+              <span style={{ fontSize: '13px', fontWeight: '500', color: profile?.discord_id ? '#3B6D11' : t.textSecondary }}>
+                {profile?.discord_id ? '✓ Linked' : 'Not linked'}
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                style={{ flex: 1, fontSize: '13px', padding: '8px 12px', border: `0.5px solid ${t.inputBorder || (dark ? '#4E505A' : '#d4d4d8')}`, borderRadius: '8px', background: dark ? '#2B2D31' : '#fff', color: t.textPrimary, fontFamily: 'Inter, sans-serif', outline: 'none' }}
+                placeholder="Enter your Discord ID (e.g. 123456789012345678)"
+                value={discordId}
+                onChange={e => setDiscordId(e.target.value)}
+              />
+              <button
+                style={{ fontSize: '13px', padding: '8px 14px', borderRadius: '8px', background: '#7F77DD', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: '500', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap' }}
+                onClick={handleLinkDiscord}
+              >
+                {discordLinkLoading ? 'Saving...' : 'Link'}
+              </button>
+            </div>
+            <p style={{ fontSize: '11px', color: t.label, margin: 0 }}>
+              To find your Discord ID: enable Developer Mode in Discord settings → right-click your username → Copy ID
+            </p>
           </div>
         </div>
 
@@ -131,23 +167,23 @@ function Settings() {
         <div style={card}>
           <p style={label}>Points & Credits</p>
           <div style={row}>
-            <span style={{ fontSize: '13px', color: t.textSecondary }}>Total profile clicks</span>
-            <span style={{ fontSize: '13px', fontWeight: '500', color: t.textPrimary }}>{totalClicks}</span>
+            <span style={{ fontSize: '13px', color: t.textSecondary }}>Total points</span>
+            <span style={{ fontSize: '13px', fontWeight: '500', color: t.textPrimary }}>{profile?.points || 0}</span>
           </div>
           <div style={{ borderTop: `0.5px solid ${t.border}` }} />
           <div style={row}>
-            <span style={{ fontSize: '13px', color: t.textSecondary }}>Earned credits</span>
-            <span style={{ fontSize: '13px', fontWeight: '500', color: t.textPrimary }}>{earnedCredits}</span>
+           <span style={{ fontSize: '13px', color: t.textSecondary }}>Earned credits</span>
+           <span style={{ fontSize: '13px', fontWeight: '500', color: t.textPrimary }}>{Math.floor((profile?.points || 0) / 20)}</span>
           </div>
           <div style={{ borderTop: `0.5px solid ${t.border}` }} />
-          <div style={row}>
-            <span style={{ fontSize: '13px', color: t.textSecondary }}>Clicks to next credit</span>
-            <span style={{ fontSize: '13px', fontWeight: '500', color: t.textPrimary }}>{pointsToNextCredit}</span>
+         <div style={row}>
+            <span style={{ fontSize: '13px', color: t.textSecondary }}>Points to next credit</span>
+            <span style={{ fontSize: '13px', fontWeight: '500', color: t.textPrimary }}>{20 - ((profile?.points || 0) % 20)}</span>
           </div>
           <div style={{ height: '6px', background: dark ? '#2B2D31' : '#f4f4f5', borderRadius: '999px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${progressPct}%`, background: '#7F77DD', borderRadius: '999px', transition: 'width 0.3s ease' }} />
-          </div>
-          <p style={{ fontSize: '12px', color: t.label, margin: 0 }}>{20 - pointsToNextCredit} / 20 clicks toward your next free publish</p>
+            <div style={{ height: '100%', width: `${(((profile?.points || 0) % 20) / 20) * 100}%`, background: '#7F77DD', borderRadius: '999px', transition: 'width 0.3s ease' }} />
+         </div>
+         <p style={{ fontSize: '12px', color: t.label, margin: 0 }}>{(profile?.points || 0) % 20} / 20 points toward your next free publish</p>
         </div>
 
         {/* Publishes */}
