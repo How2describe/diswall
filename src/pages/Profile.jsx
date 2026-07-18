@@ -70,10 +70,43 @@ function Profile() {
   const trackClick = async () => {
     const { data: { session } } = await supabase.auth.getSession()
     const identifier = session?.user?.id || getFingerprint()
-    await supabase.from('profile_clicks').insert({
-      profile_id: id,
-      clicked_by: identifier,
-    })
+// check if already clicked
+    const { data: existing } = await supabase
+      .from('profile_clicks')
+      .select('id')
+      .eq('profile_id', id)
+      .eq('clicked_by', identifier)
+      .single()
+
+    if (existing) return // already clicked, no points
+
+    // insert click
+    const { error: clickError } = await supabase
+      .from('profile_clicks')
+      .insert({ profile_id: id, clicked_by: identifier })
+
+   if (clickError) return
+
+   // find profile owner
+   const { data: commProfile } = await supabase
+     .from('commissioner_profiles')
+      .select('user_id')
+      .eq('id', id)
+      .single()
+
+    if (!commProfile) return
+
+    // add 1 point to profile owner
+    const { data: ownerProfile } = await supabase
+      .from('profiles')
+     .select('points')
+      .eq('id', commProfile.user_id)
+     .single()
+
+   await supabase
+      .from('profiles')
+      .update({ points: (ownerProfile?.points || 0) + 1 })
+      .eq('id', commProfile.user_id)
   }
 
   const getFingerprint = () => {

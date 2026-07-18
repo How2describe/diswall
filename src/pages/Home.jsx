@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
+import AdBanner from '../components/AdBanner'
 
 const CATEGORIES = ['All', 'Art & Design', 'Music', 'Development', 'Voice Acting', 'Marketing', 'Tutoring']
 
@@ -107,6 +108,9 @@ function Home() {
           <div style={{ ...styles.statLabel, color: t.textSecondary }}>Days per listing</div>
         </div>
       </div>
+      
+      {/* Ad */}
+      <AdBanner slot="1856537957" />
 
       {/* Wall */}
       <div style={styles.body}>
