@@ -75,10 +75,22 @@ function Settings() {
   const handleDeactivate = async (profileId) => {
     const confirm = window.confirm('Are you sure you want to delete this profile? This cannot be undone.')
     if (!confirm) return
-    await supabase
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { navigate('/login'); return }
+
+    const { error } = await supabase
       .from('commissioner_profiles')
       .delete()
       .eq('id', profileId)
+      .eq('user_id', session.user.id)
+
+    if (error) {
+        console.error('Delete error:', error)
+        alert('Failed to delete profile: ' + error.message)
+      return
+    }
+
     setActiveProfiles(prev => prev.filter(p => p.id !== profileId))
   }
 
