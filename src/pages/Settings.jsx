@@ -48,6 +48,7 @@ function Settings() {
     const { data: profileData } = await supabase
       .from('profiles').select('*').eq('id', userId).single()
     setProfile(profileData)
+    if (profileData?.discord_id) setDiscordId(profileData.discord_id)
 
     const { data: commProfiles } = await supabase
       .from('commissioner_profiles').select('*')
