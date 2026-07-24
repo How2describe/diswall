@@ -73,7 +73,12 @@ function Settings() {
   }
 
   const handleDeactivate = async (profileId) => {
-    await supabase.from('commissioner_profiles').update({ is_active: false }).eq('id', profileId)
+    const confirm = window.confirm('Are you sure you want to delete this profile? This cannot be undone.')
+    if (!confirm) return
+    await supabase
+      .from('commissioner_profiles')
+      .delete()
+      .eq('id', profileId)
     setActiveProfiles(prev => prev.filter(p => p.id !== profileId))
   }
 
