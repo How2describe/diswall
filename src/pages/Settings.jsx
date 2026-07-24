@@ -57,10 +57,11 @@ function Settings() {
       .order('published_at', { ascending: false })
     setActiveProfiles(commProfiles || [])
 
-    const { count: pubCount } = await supabase
+    const { count: pubCount, error: pubError } = await supabase
       .from('publish_history').select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
-    setPublishCount(pubCount || 0)
+      console.log('publish count:', pubCount, pubError)
+      setPublishCount(pubCount || 0)
 
     if (commProfiles?.length > 0) {
       const ids = commProfiles.map(p => p.id)
@@ -95,7 +96,7 @@ function Settings() {
     setActiveProfiles(prev => prev.filter(p => p.id !== profileId))
   }
 
-  const freePublishesLeft = Math.max(0, 3 - publishCount)
+  
   const earnedCredits = Math.floor(totalClicks / 20)
   const pointsToNextCredit = 20 - (totalClicks % 20)
   const progressPct = ((20 - pointsToNextCredit) / 20) * 100
@@ -114,6 +115,8 @@ function Settings() {
     fontFamily: 'Inter, sans-serif',
   }
 
+  const freePublishesLeft = Math.max(0, 3 - publishCount)
+  
   const label = {
     fontSize: '11px', fontWeight: '600', color: t.label,
     textTransform: 'uppercase', letterSpacing: '0.06em',
