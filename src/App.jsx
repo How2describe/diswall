@@ -7,6 +7,7 @@ import CreateProfile from './pages/CreateProfile'
 import Settings from './pages/Settings'
 import Navbar from './components/Navbar'
 import Inbox from './pages/Inbox'
+import Admin from './pages/Admin'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/create" element={<CreateProfile />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/inbox" element={<Inbox />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </BrowserRouter>
   )
