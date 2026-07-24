@@ -69,20 +69,17 @@ function CreateProfile() {
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
 
-    const { data: profileIds } = await supabase
-      .from('commissioner_profiles')
-      .select('id')
-      .eq('user_id', userId)
+    // fetch points from profiles table
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('points')
+      .eq('id', userId)
+      .single()
 
-    let totalClicks = 0
-    if (profileIds?.length > 0) {
-      const ids = profileIds.map(p => p.id)
-      const { count: clickCount } = await supabase
-        .from('profile_clicks')
-        .select('*', { count: 'exact', head: true })
-        .in('profile_id', ids)
-      totalClicks = clickCount || 0
-    }
+    const points = profileData?.points || 0
+    setPublishCount(count || 0)
+    setCredits(Math.floor(points / 20))
+  }
 
     const fetchCooldowns = async (userId) => {
       const { data, error } = await supabase
@@ -104,9 +101,6 @@ function CreateProfile() {
      return cooldowns
     }
 
-    setPublishCount(count || 0)
-    setCredits(Math.floor(totalClicks / 20))
-  }
 
   const canPublishFree = publishCount < 3
   const hasCredits = credits > 0
