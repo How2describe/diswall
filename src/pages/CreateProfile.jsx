@@ -39,6 +39,7 @@ function CreateProfile() {
   const [error, setError] = useState(null)
   const [publishCount, setPublishCount] = useState(0)
   const [credits, setCredits] = useState(0)
+  const [cooldowns, setCooldowns] = useState({})
 
   const [form, setForm] = useState({
     display_name: '',
@@ -56,8 +57,10 @@ function CreateProfile() {
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { navigate('/login'); return }
-    setUser(session.user)
-    fetchPublishData(session.user.id)
+   setUser(session.user)
+   fetchPublishData(session.user.id)
+   const cd = await fetchCooldowns(session.user.id)
+   setCooldowns(cd)
   }
 
   const fetchPublishData = async (userId) => {
@@ -81,6 +84,26 @@ function CreateProfile() {
       totalClicks = clickCount || 0
     }
 
+    const fetchCooldowns = async (userId) => {
+      const { data, error } = await supabase
+        .from('commissioner_profiles')
+        .select('category, published_at')
+       .eq('user_id', userId)
+       .order('published_at', { ascending: false })
+
+      if (error || !data) return {}
+
+     const cooldowns = {}
+     data.forEach(p => {
+        if (!cooldowns[p.category]) {
+         const cooldownUntil = new Date(p.published_at)
+         cooldownUntil.setDate(cooldownUntil.getDate() + 30)
+         cooldowns[p.category] = cooldownUntil
+        }
+     })
+     return cooldowns
+    }
+
     setPublishCount(count || 0)
     setCredits(Math.floor(totalClicks / 20))
   }
@@ -93,11 +116,18 @@ function CreateProfile() {
 
   const handleSubmit = async () => {
     if (!form.display_name || !form.role || !form.category) {
-      setError('Please fill in name, role, and category.')
-      return
-    }
+     setError('Please fill in name, role, and category.')
+     return
+   }
     if (!canPublish) {
       setError('You have no free publishes or credits left.')
+      return
+    }
+
+  // check cooldown
+    const cooldownUntil = cooldowns[form.category]
+    if (cooldownUntil && new Date() < cooldownUntil) {
+      setError(`You can't post in ${form.category} until ${cooldownUntil.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}.`)
       return
     }
 
@@ -107,28 +137,28 @@ function CreateProfile() {
     const skillsArray = form.skills.split(',').map(s => s.trim()).filter(Boolean)
 
     const { data: profile, error: insertError } = await supabase
-      .from('commissioner_profiles')
+     .from('commissioner_profiles')
       .insert({
         user_id: user.id,
-        display_name: form.display_name,
-        role: form.role,
-        description: form.description,
-        category: form.category,
+       display_name: form.display_name,
+       role: form.role,
+       description: form.description,
+       category: form.category,
         skills: skillsArray,
-        rate: form.rate,
-        discord_handle: form.discord_handle,
-        contact: form.contact,
+       rate: form.rate,
+       discord_handle: form.discord_handle,
+       contact: form.contact,
       })
-      .select()
+     .select()
       .single()
 
-    if (insertError) { setError(insertError.message); setLoading(false); return }
+   if (insertError) { setError(insertError.message); setLoading(false); return }
 
-    await supabase.from('publish_history').insert({
+   await supabase.from('publish_history').insert({
       user_id: user.id,
       profile_id: profile.id,
       was_free: canPublishFree,
-    })
+   })
 
     navigate('/')
   }
@@ -179,10 +209,28 @@ function CreateProfile() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
             <label style={{ fontSize: '13px', fontWeight: '500', color: t.label }}>Category *</label>
-            <select style={inputStyle} name="category" value={form.category} onChange={handleChange}>
+            <select
+              style={{ ...inputStyle, color: t.textPrimary }}
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+            >
               <option value="">Select a category</option>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              {CATEGORIES.map(c => {
+                  const cooldownUntil = cooldowns[c]
+                  const onCooldown = cooldownUntil && new Date() < cooldownUntil
+                return (
+                  <option key={c} value={c} disabled={onCooldown}>
+                   {c}{onCooldown ? ` (available ${cooldownUntil.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })})` : ''}
+                 </option>
+                )
+              })}
             </select>
+            {form.category && cooldowns[form.category] && new Date() < cooldowns[form.category] && (
+              <p style={{ fontSize: '12px', color: '#dc2626', margin: 0 }}>
+                This category is on cooldown until {cooldowns[form.category].toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}.
+              </p>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
