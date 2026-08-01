@@ -123,13 +123,6 @@ function Navbar() {
     navigate('/')
   }
 
-  <button
-   onClick={() => setShowHelp(true)}
-    style={{ ...styles.iconBtn, color: t.muted, border: `0.5px solid ${t.border}`, fontSize: '13px', fontWeight: '600' }}
-    aria-label="Help"
-  >
-    ?
-  </button>
 
   return (
     <nav style={{ ...styles.nav, background: t.navBg, borderBottom: `0.5px solid ${t.border}` }}>
@@ -144,6 +137,13 @@ function Navbar() {
 
       <div style={styles.right}>
         <button
+          onClick={() => setShowHelp(true)}
+          style={{ ...styles.iconBtn, color: t.muted, border: `0.5px solid ${t.border}`, fontSize: '13px', fontWeight: '600' }}
+          aria-label="Help"
+        >
+          ?
+        </button>
+        <button
           onClick={toggle}
           style={{ ...styles.iconBtn, color: t.muted, border: `0.5px solid ${t.border}` }}
           aria-label="Toggle dark mode"
@@ -153,6 +153,7 @@ function Navbar() {
 
         {user ? (
           <>
+            ...
             <Link to="/create" style={{ ...styles.btnFill }}>Post a profile</Link>
             <Link to="/inbox" style={{ ...styles.btnOutline, color: t.text, border: `0.5px solid ${t.border}`, position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
               🔔
