@@ -148,11 +148,15 @@ function CreateProfile() {
 
    if (insertError) { setError(insertError.message); setLoading(false); return }
 
-   await supabase.from('publish_history').insert({
+    const { error: historyError } = await supabase.from('publish_history').insert({
       user_id: user.id,
       profile_id: profile.id,
       was_free: canPublishFree,
-   })
+    })
+
+if (historyError) {
+  console.error('Publish history error:', historyError)
+}
 
     navigate('/')
   }
