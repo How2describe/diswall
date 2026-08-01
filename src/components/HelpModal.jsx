@@ -50,7 +50,9 @@ Third-party services:
 Data retention:
 Your data is retained as long as your account is active. You may request deletion by contacting us.
 
-Contact: support@diswall.app`,
+Contact: diswallhelpandservices@gmail.com or Artemissss412 on Discord 
+
+for any questions regarding these terms.`,
   },
   'Terms of Service': {
     title: 'Terms of Service',
@@ -83,7 +85,9 @@ DisWall is provided "as is" without warranties of any kind. We are not responsib
 7. Changes to terms
 We may update these terms at any time. Continued use of DisWall after changes constitutes acceptance.
 
-Contact: diswallhelpandservices@gmail.com or Artemissss412 on Discord for any questions regarding these terms.`,
+Contact: diswallhelpandservices@gmail.com or Artemissss412 on Discord 
+
+for any questions regarding these terms.`,
   },
 }
 
