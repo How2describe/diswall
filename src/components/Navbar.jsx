@@ -153,7 +153,6 @@ function Navbar() {
 
         {user ? (
           <>
-            ...
             <Link to="/create" style={{ ...styles.btnFill }}>Post a profile</Link>
             <Link to="/inbox" style={{ ...styles.btnOutline, color: t.text, border: `0.5px solid ${t.border}`, position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
               🔔
