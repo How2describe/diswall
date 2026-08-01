@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useTheme } from '../context/ThemeContext'
+import HelpModal from './HelpModal'
 
 const themes = {
   light: {
@@ -92,6 +93,7 @@ function Navbar() {
   const navigate = useNavigate()
   const { dark, toggle } = useTheme()
   const t = dark ? themes.dark : themes.light
+  const [showHelp, setShowHelp] = useState(false)
 
   const fetchUnread = async (userId) => {
     const { count } = await supabase
@@ -120,6 +122,14 @@ function Navbar() {
     await supabase.auth.signOut()
     navigate('/')
   }
+
+  <button
+   onClick={() => setShowHelp(true)}
+    style={{ ...styles.iconBtn, color: t.muted, border: `0.5px solid ${t.border}`, fontSize: '13px', fontWeight: '600' }}
+    aria-label="Help"
+  >
+    ?
+  </button>
 
   return (
     <nav style={{ ...styles.nav, background: t.navBg, borderBottom: `0.5px solid ${t.border}` }}>
@@ -162,6 +172,7 @@ function Navbar() {
           </>
         )}
       </div>
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
     </nav>
   )
 }
