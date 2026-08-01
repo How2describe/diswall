@@ -83,7 +83,7 @@ DisWall is provided "as is" without warranties of any kind. We are not responsib
 7. Changes to terms
 We may update these terms at any time. Continued use of DisWall after changes constitutes acceptance.
 
-Contact: support@diswall.app`,
+Contact: diswallhelpandservices@gmail.com or Artemissss412 on Discord for any questions regarding these terms.`,
   },
 }
 
